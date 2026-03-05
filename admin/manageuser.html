@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>E-Notice Board Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #222;
+      margin: 0;
+      padding: 0;
+      color: #222;
+    }
+    .container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      background: #222;
+      box-sizing: border-box;
+      padding: 30px;
+    }
+    .sidebar {
+      width: 220px;
+      background: #f5f5f5;
+      border-radius: 10px;
+      margin-right: 20px;
+      padding: 20px 0 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .sidebar h2 {
+      margin-bottom: 30px;
+      color: #222;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .menu-btn {
+      width: 85%;
+      padding: 13px 0;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 6px;
+      background: #ddd;
+      color: #222;
+      font-size: 17px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .menu-btn.active, .menu-btn:hover {
+      background: #007bff;
+      color: #fff;
+    }
+
+    .main-panel {
+      flex: 1;
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px 25px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      display: flex;
+      flex-direction: column;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+    .search-bar input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 20px 0 0 20px;
+      border: 1px solid #ccc;
+      outline: none;
+      font-size: 15px;
+    }
+    .search-bar button {
+      background: #007bff;
+      border: none;
+      color: #fff;
+      padding: 8px 15px;
+      border-radius: 0 20px 20px 0;
+      cursor: pointer;
+      font-size: 17px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background: #f2f2f2;
+      font-size: 15px;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .toggle-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: #007bff;
+      margin-right: 8px;
+      transition: color 0.2s;
+    }
+    .toggle-btn.active {
+      color: #28a745;
+    }
+    .toggle-btn.delete.active {
+      color: #dc3545;
+    }
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+        padding: 10px;
+      }
+      .sidebar {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      .main-panel {
+        padding: 15px 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h2>Categories</h2>
+      <button class="menu-btn active" data-group="students"><i class="fas fa-user-graduate"></i> Students</button>
+      <button class="menu-btn" data-group="stuff"><i class="fas fa-users"></i> Stuff</button>
+    </div>
+    <div class="main-panel">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search...">
+        <button id="searchBtn"><i class="fas fa-search"></i></button>
+      </div>
+      <div class="table-container">
+        <table id="userTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Faculty</th>
+              <th>E-mail</th>
+              <th>Create</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- JS will populate this -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Demo data for Students and Stuff
+    const users = {
+      students: [
+        { name: "Mujjzi DENNIS", faculty: "Science", email: "m.dennis@stud.umu.ac.ug" },
+        { name: "Muema JAMES", faculty: "Law", email: "m.james@stud.umu.ac.ug" },
+        { name: "Mayu PETER", faculty: "Bam", email: "m.peter@stud.umu.ac.ug" },
+        { name: "Sonko ISMAIL", faculty: "Pam", email: "s.ismail@stud.umu.ac.ug" },
+        { name: "Ndebba FAROUK", faculty: "Pam", email: "n.farouk@stud.umu.ac.ug" }
+      ],
+      stuff: [
+        { name: "Jane DOE", faculty: "Admin", email: "j.doe@umu.ac.ug" },
+        { name: "John SMITH", faculty: "IT", email: "j.smith@umu.ac.ug" }
+      ]
+    };
+
+    let currentGroup = "students";
+    let filteredUsers = users[currentGroup];
+
+    // Render table rows
+    function renderTable(data) {
+      const tbody = document.querySelector("#userTable tbody");
+      tbody.innerHTML = "";
+      data.forEach((user, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${user.name}</td>
+          <td>${user.faculty}</td>
+          <td>${user.email}</td>
+          <td>
+            <button class="toggle-btn create" data-row="${idx}" title="Toggle Create">
+              <i class="fas fa-plus-circle"></i>
+            </button>
+          </td>
+          <td>
+            <button class="toggle-btn delete" data-row="${idx}" title="Toggle Delete">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Switch group (Students/Stuff)
+    document.querySelectorAll(".menu-btn").forEach(btn => {
+      btn.addEventListener("click", function() {
+        document.querySelectorAll(".menu-btn").forEach(b => b.classList.remove("active"));
+        this.classList.add("active");
+        currentGroup = this.getAttribute("data-group");
+        filteredUsers = users[currentGroup];
+        document.getElementById("searchInput").value = "";
+        renderTable(filteredUsers);
+      });
+    });
+
+    // Search functionality
+    document.getElementById("searchInput").addEventListener("input", function() {
+      const val = this.value.toLowerCase();
+      filteredUsers = users[currentGroup].filter(u =>
+        u.name.toLowerCase().includes(val) ||
+        u.faculty.toLowerCase().includes(val) ||
+        u.email.toLowerCase().includes(val)
+      );
+      renderTable(filteredUsers);
+    });
+
+    // Toggle button functionality (Create/Delete)
+    document.querySelector("#userTable tbody").addEventListener("click", function(e) {
+      if (e.target.closest(".toggle-btn")) {
+        const btn = e.target.closest(".toggle-btn");
+        btn.classList.toggle("active");
+      }
+    });
+
+    // Initial render
+    renderTable(filteredUsers);
+  </script>
+</body>
+</html>

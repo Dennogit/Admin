@@ -1,0 +1,618 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../Logins/login.php");
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Students - E-Notice Board</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #742c2c;
+            --background: #ddd;
+            --sidebar-bg: #fff;
+            --main-bg: #f9f9f9;
+            --card-bg: #fff;
+            --text-dark: #222;
+            --text-light: #777;
+            --radius: 12px;
+        }
+        html, body {
+            height: 115vh;
+            overflow-y: hidden;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            /* Use Poppins font */
+            font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-dark);
+            height: 115vh;
+            /* Remove min-height to avoid extra scroll */
+        }
+        .dashboard-container {
+            display: flex;
+            gap: 10px;
+            padding: 2px;
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 115vh;
+            /* Remove min-height to avoid extra scroll */
+            box-sizing: border-box;
+        }
+        .sidebar {
+            background: var(--sidebar-bg);
+            border-radius: var(--radius);
+            width: 210px;
+            min-width: 100px;
+            padding: 20px 10px 20px 18px;
+            box-shadow: 0 4px 24px rgba(116,44,44,0.07);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            height: 94vh;
+        }
+        .sidebar h2 {
+            font-size: 1.3rem;
+            margin-bottom: 28px;
+            font-weight: 700;
+        }
+        .sidebar .menu-btn {
+            width: 90%;
+            padding: 12px 0 12px 18px;
+            margin-bottom: 12px;
+            border: none;
+            border-radius: 7px;
+            background: #e2e2e2;
+            color: var(--text-dark);
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 4px rgba(116,44,44,0.03);
+        }
+        .sidebar .menu-btn.active, .sidebar .menu-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(116,44,44,0.09);
+        }
+        .main-content {
+            flex: 1;
+            background: var(--main-bg);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 24px rgba(116,44,44,0.07);
+            padding: 25px 18px 35px 18px;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            height: 96vh;
+            overflow-y: auto; /* Enable vertical scroll */
+            /* overflow: hidden; -- remove this line */
+        }
+        .main-content h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #742c2c;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+        .search-bar {
+            margin-top: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 1px 6px rgba(116,44,44,0.04);
+            padding: 2px 4px;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 9px 14px;
+            border-radius: 20px 0 0 20px;
+            border: none;
+            box-shadow: none;
+            font-size: 1rem;
+            outline: none;
+            background: #fafafa;
+        }
+        .search-bar button {
+            background: var(--primary);
+            border: none;
+            color: #fff;
+            padding: 9px 18px;
+            border-radius: 0 20px 20px 0;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            border-radius: 0 20px 20px 0;
+            background: linear-gradient(90deg,#742c2c 60%,#a85c5c 100%);
+            transition: background 0.2s;
+        }
+        .search-bar button:hover {
+            background: #a85c5c;
+        }
+        .section-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .section-title-row h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .view-all-link {
+            color: #742c2c;
+            font-size: 0.98rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 18px;
+            margin-top: 10px;
+        }
+        .post-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            transition: box-shadow 0.18s, transform 0.18s;
+            cursor: pointer;
+        }
+        .post-card:hover {
+            box-shadow: 0 8px 32px rgba(116,44,44,0.13);
+            transform: translateY(-4px) scale(1.02);
+        }
+        .post-card img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            background: #f0f0f0;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            transition: filter 0.2s;
+        }
+        .post-card:hover img {
+            filter: brightness(0.98) saturate(1.1);
+        }
+        .post-card-content {
+            padding: 14px 14px 10px 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .post-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+            color: var(--text-dark);
+        }
+        .post-meta {
+            font-size: 0.97rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+        .details-link {
+            color: #742c2c;
+            text-decoration: none;
+            font-size: 0.96rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.18s;
+        }
+        .details-link:hover {
+            color: #a85c5c;
+            text-decoration: underline;
+        }
+        .fab {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            width: 45px;
+            height: 45px;
+            background: #742c2c;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+            cursor: pointer;
+            z-index: 1000;
+            border: none;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.18s;
+        }
+        .fab:hover {
+            background: #a85c5c;
+            box-shadow: 0 8px 32px rgba(116,44,44,0.18);
+            transform: scale(1.08);
+        }
+        /* Modal improvements */
+        #detailsModal > div, #addModal > div {
+            animation: modalPop 0.22s cubic-bezier(.4,1.6,.6,1) 1;
+        }
+        @keyframes modalPop {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        /* Responsive tweaks */
+        @media (max-width: 900px) {
+            .dashboard-container {
+                flex-direction: column;
+                gap: 12px;
+                padding: 8px;
+            }
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                flex-direction: row;
+                justify-content: flex-start;
+                align-items: center;
+                padding: 18px 5px 10px 8px;
+                margin-bottom: 10px;
+                height: auto;
+            }
+            .sidebar h2 {
+                margin-bottom: 0;
+                margin-right: 18px;
+            }
+            .sidebar .menu-btn {
+                width: auto;
+                min-width: 100px;
+                margin: 0 10px 0 0;
+                font-size: 0.98rem;
+                padding: 10px 10px;
+            }
+        }
+        @media (max-width: 600px) {
+            .main-content {
+                padding: 10px 2px 20px 2px;
+            }
+            .notices-panel {
+                padding: 10px;
+            }
+            .fab {
+                right: 16px;
+                bottom: 16px;
+                width: 44px;
+                height: 44px;
+                font-size: 1.3rem;
+            }
+            .post-card img {
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <?php
+    require_once 'db.php'; // Include your database connection file
+    // Fetch notices from the database for JS
+    $db = new mysqli('localhost', 'root', '', 'university_portal');
+    // $notices = [];
+    // if (!$db->connect_errno) {
+    //     $res = $db->query("SELECT title, meta, details, audience, image_path FROM notices ORDER BY id DESC WHERE audience = 'students' ORDER BY id DESC LIMIT 10 ");
+    //     while ($row = $res->fetch_assoc()) {
+    //         $notices[] = $row;
+    //     }
+    //     $db->close();}
+    $notices = [];
+if (!$db->connect_errno) {
+    $res = $db->query("SELECT title, meta, details, audience, image_path FROM notices WHERE audience = 'students' ORDER BY id DESC LIMIT 10");
+    while ($row = $res->fetch_assoc()) {
+        $notices[] = $row;
+    }
+    $db->close();
+}
+    
+    ?>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>Categories</h2>
+            <button class="menu-btn active" data-menu="students" style="font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;"><i class="fas fa-user-graduate"></i> Students</button>
+            <button class="menu-btn" data-menu="stuff" style="font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;"><i class="fas fa-users"></i> Staff</button>
+            <button class="menu-btn" data-menu="images" style="font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;"><i class="fas fa-images"></i> Images</button>
+
+        </div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <h2>Students</h2>
+            <!-- Add search bar here -->
+            <div class="search-bar">
+                <input type="text" placeholder="Search notices..." aria-label="Search notices">
+                <button title="Search"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="section-title-row">
+                <h3>Recent posts</h3>
+                <span class="view-all-link" id="viewAllBtn">View all <i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="posts-grid" id="postsGrid">
+
+                <?php foreach($notices as $post): ?>
+                    <div class="post-card">
+                        <img src="<?php echo !empty($post['image_path']) ? htmlspecialchars($post['image_path']) : 'https://via.placeholder.com/400x140?text=No+Image'; ?>" alt="Notice image">
+                        <div class="post-card-content">
+                            <div class="post-title"><?php echo htmlspecialchars($post['title']); ?></div>
+                            <div class="post-meta"><?php echo htmlspecialchars($post['meta']); ?></div>
+                            <a href="#" class="details-link">View details <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+    <!-- Floating Action Button -->
+    <button class="fab" id="addBtn" title="Add new post"><i class="fas fa-plus"></i></button>
+    <!-- Modal for details (hidden by default) -->
+    <div id="detailsModal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.33); align-items:center; justify-content:center; z-index:2000;">
+        <div style="background:#fff; border-radius:12px; max-width:370px; width:92%; padding:24px 18px; position:relative;">
+            <button id="closeModal" style="position:absolute; right:12px; top:10px; background:none; border:none; font-size:1.4rem; color:#888; cursor:pointer;"><i class="fas fa-times"></i></button>
+            <h3 id="modalTitle" style="margin-top:0;"></h3>
+            <div id="modalMeta" style="color:#888; font-size:0.98rem; margin-bottom:10px;"></div>
+            <div id="modalDetails" style="margin-bottom:10px;"></div>
+        </div>
+    </div>
+    <!-- Modal for adding new post -->
+    <div id="addModal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.33); align-items:center; justify-content:center; z-index:2000; font-family:'Poppins',sans-serif;">
+        <div style="
+            background:#fff;
+            border-radius:18px;
+            max-width:410px;
+            width:96%;
+            padding:32px 24px 24px 24px;
+            position:relative;
+            box-shadow:0 8px 32px rgba(0,0,0,0.13);
+            display:flex;
+            flex-direction:column;
+            gap:0.5rem;
+            font-family:'Poppins',sans-serif;
+            ">
+            <button id="closeAddModal" style="
+                position:absolute;
+                right:18px;
+                top:16px;
+                background:none;
+                border:none;
+                font-size:1.5rem;
+                color:#b0b0b0;
+                cursor:pointer;
+                transition:color 0.2s;
+            " onmouseover="this.style.color='#742c2c'" onmouseout="this.style.color='#b0b0b0'">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 style="margin-top:0; margin-bottom:10px; font-weight:700; font-size:1.25rem; color:#742c2c; text-align:center;">
+                <i class="fas fa-plus-circle" style="margin-right:7px; color:#742c2c;"></i>
+                Add New Notice
+            </h3>
+
+
+            <form id="addNoticeForm" action="submit_notice.php" method="POST" enctype="multipart/form-data" autocomplete="off" style="display:flex; flex-direction:column; gap:13px;">
+               
+                <div>
+                    <label for="addTitle" style="font-size:0.98rem; font-weight:500; color:#222; margin-bottom:3px; display:block;">Title</label>
+                    <input type="text" id="title" placeholder="Enter notice title" required style="width:92%;padding:10px 12px;border-radius:7px;border:1px solid #e0e0e0;font-size:0.8rem; background:#fafafa; font-family:'Poppins',sans-serif;">
+                </div>
+                <!-- Add meta input -->
+                <div>
+                    <label for="addMeta" style="font-size:0.98rem; font-weight:500; color:#222; margin-bottom:3px; display:block;">Meta</label>
+                    <input type="text" id="meta" placeholder="Short description or meta" required style="width:92%;padding:10px 12px;border-radius:7px;border:1px solid #e0e0e0;font-size:0.8rem; background:#fafafa; font-family:'Poppins',sans-serif;">
+                </div>
+                 
+                <div>
+                    <label for="addDetails" style="font-size:0.98rem; font-weight:500; color:#222; margin-bottom:3px; display:block;">Details</label>
+                    <textarea id="details" placeholder="Full details..." required style="width:92%;padding:10px 12px;border-radius:7px;border:1px solid #e0e0e0;font-size:0.8rem;min-height:30px; background:#fafafa; font-family:'Poppins',sans-serif;"></textarea>
+                </div>
+                <!-- A dropdown for audience selection -->
+                <div>
+                    <label for="addAudience" style="font-size:0.98rem; font-weight:500; color:#222; margin-bottom:3px; display:block;">
+                        Post To
+                    </label>
+                    <select id="audience" required style="width:96%;padding:10px 12px;border-radius:7px;border:1px solid #e0e0e0;font-size:0.8rem; background:#fafafa; font-family:'Poppins',sans-serif;">
+                        <option value="students">Students</option>
+                        <option value="staff">Staff</option>
+                        <option value="both">Both</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="addImg" style="font-size:0.98rem; font-weight:500; color:#222; margin-bottom:3px; display:block;">
+                        Image <span style="color:#888;font-weight:400;font-size:0.93rem;">(optional, jpg/png)</span>
+                    </label>
+                    <input type="file" id="image_path" accept="image/*" style="width:92%;padding:10px 12px;border-radius:7px;border:1px solid #e0e0e0;font-size:0.8rem; background:#fafafa; font-family:'Poppins',sans-serif;">
+                </div>
+                <button type="submit" style="
+                    background:linear-gradient(90deg,#742c2c 60%,#a85c5c 100%);
+                    color:#fff;
+                    border:none;
+                    padding:12px 0;
+                    border-radius:8px;
+                    font-size:1rem;
+                    font-weight:500;
+                    cursor:pointer;
+                    margin-top:8px;
+                    transition:background 0.18s;
+                    font-family:'Poppins',sans-serif;
+                    box-shadow:0 2px 8px rgba(116,44,44,0.07);
+                " onmouseover="this.style.background='#a85c5c'" onmouseout="this.style.background='linear-gradient(90deg,#742c2c 60%,#a85c5c 100%)'">
+                    <i class="fas fa-paper-plane" style="margin-right:7px;"></i>
+                    Add Notice
+                </button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Sidebar menu toggle logic
+        document.querySelectorAll('.sidebar .menu-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.sidebar .menu-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                // For demo: change header and posts based on menu
+                document.querySelector('.main-content h2').textContent = this.textContent.trim();
+                // Optionally, you can load different posts here based on menu
+            });
+        });
+
+        // Modal logic for "View details"
+        const postsData = [
+            {
+                title: "Registrar Admissions",
+                meta: "March into your future with UMU.",
+                details: "Admissions open for 2025. Apply now to join Uganda Martyrs University."
+            },
+            {
+                title: "Sports tutor",
+                meta: "League match",
+                details: "Inter-faculty football league match highlights."
+            },
+            {
+                title: "Market Day",
+                meta: "Campus bazaar",
+                details: "Annual campus bazaar with food, crafts, and fun."
+            },
+            {
+                title: "BBQ Night",
+                meta: "Food festival",
+                details: "Join us for a night of great food and music."
+            }
+        ];
+        document.querySelectorAll('.details-link').forEach((link, idx) => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('modalTitle').textContent = postsData[idx].title;
+                document.getElementById('modalMeta').textContent = postsData[idx].meta;
+                document.getElementById('modalDetails').textContent = postsData[idx].details;
+                document.getElementById('detailsModal').style.display = 'flex';
+            });
+        });
+        document.getElementById('closeModal').onclick = function() {
+            document.getElementById('detailsModal').style.display = 'none';
+        };
+        window.onclick = function(event) {
+            if(event.target === document.getElementById('detailsModal')) {
+                document.getElementById('detailsModal').style.display = 'none';
+            }
+        };
+
+        // Floating action button - open add modal
+        document.getElementById('addBtn').onclick = function() {
+            document.getElementById('addModal').style.display = 'flex';
+        };
+        document.getElementById('closeAddModal').onclick = function() {
+            document.getElementById('addModal').style.display = 'none';
+        };
+        window.addEventListener('click', function(event) {
+            if(event.target === document.getElementById('addModal')) {
+                document.getElementById('addModal').style.display = 'none';
+            }
+        });
+
+        // Add new notice logic
+        const postsGrid = document.getElementById('postsGrid');
+        // Use a single array to keep all posts (including dynamically added)
+        let postsDataArr = <?php echo json_encode($notices, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP); ?>;
+
+        // Update details modal logic to use postsDataArr
+        function attachDetailsLinks() {
+            document.querySelectorAll('.details-link').forEach((link, idx) => {
+                link.onclick = function(e) {
+                    e.preventDefault();
+                    const post = postsDataArr[idx];
+                    document.getElementById('modalTitle').textContent = post.title;
+                    document.getElementById('modalMeta').textContent = post.meta;
+                    document.getElementById('modalDetails').textContent = post.details;
+                    document.getElementById('detailsModal').style.display = 'flex';
+                };
+            });
+        }
+        attachDetailsLinks();
+
+        document.getElementById('addNoticeForm').onsubmit = function(e) {
+            e.preventDefault();
+            const title = document.getElementById('addTitle').value.trim();
+            const meta = document.getElementById('addMeta').value.trim();
+            const details = document.getElementById('addDetails').value.trim();
+            const audience = document.getElementById('addAudience').value;
+            const imgInput = document.getElementById('addImg');
+            let imgSrc = '';
+
+            if (imgInput.files && imgInput.files[0]) {
+                imgSrc = URL.createObjectURL(imgInput.files[0]);
+            } else {
+                imgSrc = 'https://via.placeholder.com/400x140?text=No+Image';
+            }
+
+            // Add to postsDataArr
+            postsDataArr.unshift({ title, meta, details, audience, img: imgSrc });
+
+            // Create new card element
+            const card = document.createElement('div');
+            card.className = 'post-card';
+            card.innerHTML = `
+                <img src="${imgSrc}" alt="Notice image">
+                <div class="post-card-content">
+                    <div class="post-title">${title}</div>
+                    <div class="post-meta">${meta}</div>
+                    <a href="#" class="details-link">View details <i class="fas fa-arrow-right"></i></a>
+                </div>
+            `;
+            // Insert at the top
+            postsGrid.insertBefore(card, postsGrid.firstChild);
+
+            // Re-attach details modal logic to all links
+            attachDetailsLinks();
+
+            // Reset form and close modal
+            this.reset();
+            document.getElementById('addModal').style.display = 'none';
+        };
+
+        // Search functionality (filters posts by title/meta)
+        document.querySelector('.search-bar input')?.addEventListener('input', function() {
+            const val = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.post-card');
+            postsDataArr.forEach((post, idx) => {
+                let show = post.title.toLowerCase().includes(val) || post.meta.toLowerCase().includes(val);
+                cards[idx].style.display = show ? '' : 'none';
+            });
+        });
+
+        // "View all" button (for demo, just alert)
+        document.getElementById('viewAllBtn').onclick = function() {
+            alert('Show all posts functionality goes here!');
+        };
+    </script>
+
+    
+</body>
+</html>

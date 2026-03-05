@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+    }
+
+    .sidebar {
+      background-color: #742c2c;
+      color: white;
+      width: 220px;
+      min-width: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      transition: width 0.3s ease, left 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    .sidebar.hidden-mobile {
+      left: -220px;
+    }
+
+    .sidebar div, .sidebar button {
+      width: 100%;
+      padding: 15px;
+      text-align: left;
+      border: none;
+      background: none;
+      color: white;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    .sidebar div.header {
+      font-weight: bold;
+      font-size: 18px;
+      justify-content: center;
+      cursor: default;
+    }
+
+    .sidebar.collapsed div span,
+    .sidebar.collapsed button span {
+      display: none;
+    }
+
+    .sidebar div:hover:not(.header), .sidebar button:hover {
+      background-color: #5a1f1f;
+    }
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 1001;
+      display: none;
+    }
+
+    .backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 998;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease;
+    }
+
+    .backdrop.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      background-color: #ddd;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 10px;
+    }
+
+    .dashboard-cards {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      padding: 15px;
+      color: white;
+      border-radius: 6px;
+      min-width: 150px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .card.green { background-color: #4caf50; }
+    .card.gold { background-color: #c9a933; }
+
+    .hidden {
+      display: none;
+    }
+
+    .sidebar-menu {
+      flex-grow: 1;
+      width: 100%;
+    }
+
+    .sidebar-footer {
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        z-index: 999;
+      }
+
+      .main-content {
+        margin: 0;
+        border-radius: 0;
+      }
+
+      .toggle-btn {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="toggle-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+  <div class="backdrop" id="backdrop" onclick="hideSidebar()"></div>
+
+  <div class="sidebar hidden-mobile" id="sidebar">
+    <div class="header"><i class="fas fa-user-shield"></i> <span>Admin</span></div>
+    <div class="sidebar-menu">
+      <button onclick="showContent('dashboard')"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></button>
+      <button onclick="showContent('users')"><i class="fas fa-users"></i> <span>Manage Users</span></button>
+      <button onclick="showContent('notices')"><i class="fas fa-bullhorn"></i> <span>Notices</span></button>
+      <button onclick="showContent('settings')"><i class="fas fa-cogs"></i> <span>Settings</span></button>
+    </div>
+    <div class="sidebar-footer">
+      <button onclick="showContent('logout')"><i class="fas fa-sign-out-alt"></i> <span>Log out</span></button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div id="dashboard">
+      <div class="dashboard-cards">
+        <div class="card green">
+          <div><strong>6,520 <i class="fas fa-users"></i></strong></div>
+          <div>No of Students</div>
+        </div>
+        <div class="card green">
+          <div><strong>50 <i class="fas fa-user-friends"></i></strong></div>
+          <div>No of staff</div>
+        </div>
+        <div class="card gold">
+          <div><strong>1,520 <i class="fas fa-comment"></i></strong></div>
+          <div>No of notices</div>
+        </div>
+      </div>
+      <p>Recent updates.</p>
+    </div>
+    <div id="users" class="hidden">Here you can manage users.</div>
+    <div id="notices" class="hidden">Notices will be shown here.</div>
+    <div id="settings" class="hidden">Adjust your settings here.</div>
+    <div id="logout" class="hidden">You have been logged out.</div>
+  </div>
+
+  <script>
+    function showContent(id) {
+      const sections = ['dashboard', 'users', 'notices', 'settings', 'logout'];
+      sections.forEach(section => {
+        document.getElementById(section).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+      if (window.innerWidth <= 768) {
+        hideSidebar();
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('backdrop');
+      const isHidden = sidebar.classList.contains('hidden-mobile');
+
+      if (isHidden) {
+        sidebar.classList.remove('hidden-mobile');
+        backdrop.classList.add('show');
+      } else {
+        sidebar.classList.add('hidden-mobile');
+        backdrop.classList.remove('show');
+      }
+    }
+
+    function hideSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('backdrop');
+      sidebar.classList.add('hidden-mobile');
+      backdrop.classList.remove('show');
+    }
+  </script>
+</body>
+</html>

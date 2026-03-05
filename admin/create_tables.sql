@@ -1,0 +1,20 @@
+CREATE DATABASE IF NOT EXISTS university_portal;
+USE university_portal;
+
+CREATE TABLE IF NOT EXISTS students_notices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    meta VARCHAR(255) NOT NULL,
+    details TEXT NOT NULL,
+    img VARCHAR(255),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS staff_notices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    meta VARCHAR(255) NOT NULL,
+    details TEXT NOT NULL,
+    img VARCHAR(255),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

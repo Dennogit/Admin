@@ -1,0 +1,13 @@
+HTTrack3.49-2+htsswf+htsjava launched on Mon, 07 Jul 2025 17:49:03 at https://same-5x9cbj47v2s-latest.netlify.app/ +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar
+(winhttrack -qwC2%Ps2u1%s%uN0%I0p3DaK0H0%kf2A25000%f#f -F "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)" -%F "<!-- Mirrored from %s%s by HTTrack Website Copier/3.x [XR&CO'2014], %s -->" -%l "en, *" https://same-5x9cbj47v2s-latest.netlify.app/ -O1 "C:\xampp\htdocs\New folder\admin\noti\notc bd" +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar )
+
+Information, Warnings and Errors reported for this mirror:
+note:	the hts-log.txt file, and hts-cache folder, may contain sensitive information,
+	such as username/password authentication for websites mirrored in this project
+	do not share these files/folders if you want these information to remain private
+
+17:49:06	Warning: 	File not parsed, looks like binary: https://same-5x9cbj47v2s-latest.netlify.app/robots.txt
+17:54:58	Warning: 	Retry after error -5 (error:00000005:lib(0):func(0):DH lib) at link https://www.sandiego.edu/dining/images/site-banner-1.jpg (from https://same-5x9cbj47v2s-latest.netlify.app/)
+
+HTTrack Website Copier/3.49-2 mirror complete in 6 minutes 4 seconds : 10 links scanned, 8 files written (933391 bytes overall) [851695 bytes received at 2339 bytes/sec], 113991 bytes transferred using HTTP compression in 5 files, ratio 22%
+(No errors, 2 warnings, 0 messages)
